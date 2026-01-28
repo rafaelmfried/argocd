@@ -6,5 +6,5 @@ Este repositório contém materiais de estudo e exemplos práticos relacionados 
 
 ## Referências
 
-- [github](https://github.com/badtuxx/DescomplicandoArgoCD)
-- [youtube](https://www.youtube.com/watch?v=TDvA2vAQCF8)
+- [Descomplicando ArgoCD Repo](https://github.com/badtuxx/DescomplicandoArgoCD)
+- [Descomplicando ArgoCD Vídeo](https://www.youtube.com/watch?v=TDvA2vAQCF8)
