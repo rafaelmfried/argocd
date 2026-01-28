@@ -1,0 +1,3 @@
+[submodule "testapp"]
+	path = testapp
+	url = git@github.com:rafaelmfried/testapp.git
