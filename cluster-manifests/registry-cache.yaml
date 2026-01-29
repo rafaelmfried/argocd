@@ -1,24 +1,27 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: local-registry
+  name: registry-cache
   labels:
-    app: local-registry
+    app: registry-cache
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: local-registry
+      app: registry-cache
   template:
     metadata:
       labels:
-        app: local-registry
+        app: registry-cache
     spec:
       containers:
         - name: registry
           image: registry:2
           ports:
             - containerPort: 5000
+          env:
+            - name: REGISTRY_PROXY_REMOTEURL
+              value: "https://registry-1.docker.io"
           resources:
             requests:
               cpu: "100m"
@@ -36,15 +39,14 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: local-registry
+  name: registry-cache
   labels:
-    app: local-registry
+    app: registry-cache
 spec:
-  type: NodePort
+  type: ClusterIP
   selector:
-    app: local-registry
+    app: registry-cache
   ports:
     - name: registry
       port: 5000
       targetPort: 5000
-      nodePort: 30000

@@ -19,15 +19,17 @@ Os manifests de cluster ja estao em `cluster-manifests`:
 kubectl apply -k cluster-manifests
 ```
 
-- **Registry**: Service `local-registry` (NodePort 30000)
+- **Registry (push)**: Service `local-registry` (NodePort 30000)
+- **Registry cache (pull-through)**: Service `registry-cache` (ClusterIP)
 - **App NodePort**: Service `testapp-nodeport` (NodePort 30080)
 
-> O registry local pode atuar como **pull-through cache** do Docker Hub
+> O **registry-cache** atua como **pull-through cache** do Docker Hub
 > (baixa automaticamente imagens quando nao existem localmente).
-> Para isso, o deployment do registry usa `REGISTRY_PROXY_REMOTEURL=https://registry-1.docker.io`.
+> Ele usa `REGISTRY_PROXY_REMOTEURL=https://registry-1.docker.io` e eh **somente leitura**
+> (nao aceite push).
 >
 > **Observacao:** para imagens oficiais do Docker Hub, use o prefixo `library/`,
-> ex.: `local-registry.default.svc.cluster.local:5000/library/node:22.20.0-alpine`.
+> ex.: `registry-cache.default.svc.cluster.local:5000/library/node:22.20.0-alpine`.
 
 > Para acessar o registry pelo host (opcional):
 >
