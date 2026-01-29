@@ -101,12 +101,16 @@ spec:
   replicas: 1
   template:
     spec:
+      image: summerwind/actions-runner-dind:latest
       repository: <seu-usuario>/<seu-repo>
       labels:
         - self-hosted
         - linux
         - k3d
       dockerdWithinRunnerContainer: true
+      env:
+        - name: DOCKER_INSECURE_REGISTRY
+          value: "local-registry.default.svc.cluster.local:5000"
 ```
 
 Aplique:
@@ -114,6 +118,14 @@ Aplique:
 ```bash
 kubectl apply -f path/to/runner-deployment.yaml
 ```
+
+> **Importante:** quando `dockerdWithinRunnerContainer: true`, use uma imagem com Docker embutido (ex.: `summerwind/actions-runner-dind`). Caso contrario, o runner sobe mas o Docker nao inicia (`Cannot connect to the Docker daemon`).
+>
+> Esse `env` gera o seguinte `daemon.json` dentro do runner:
+>
+> ```json
+> {"insecure-registries":["local-registry.default.svc.cluster.local:5000"]}
+> ```
 
 ---
 

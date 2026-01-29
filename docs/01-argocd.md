@@ -92,9 +92,9 @@
    Se o seu k3d mapeia a porta 80 do load balancer para o host 8080, acesse `https://localhost:8080`.
    Para remover:
 
-    ```bash
-    kubectl delete -k argocd-manifests
-    ```
+   ```bash
+   kubectl delete -k argocd-manifests
+   ```
 
 9. **Criar o ARGOCD_AUTH_TOKEN (para automacao)**
    Para gerar um token de API e usar em automacoes (ex.: GitHub Actions):
@@ -111,64 +111,78 @@
    > Dica: se voce tiver RBAC, crie uma conta dedicada ao CI com permissao apenas de sync.
 
 10. **Robot do ArgoCD (conta de automacao)**
-   Um *robot* e uma conta dedicada para CI/CD, com permissao **minima** e token proprio.
-   Vantagens:
-   - Evita usar o token do admin
-   - Permissoes controladas por RBAC
-   - Facilita rotacao e revogacao
+    Um _robot_ e uma conta dedicada para CI/CD, com permissao **minima** e token proprio.
+    Vantagens:
 
-   **Passo 1: criar a conta no argocd-cm**
-   ```bash
-   kubectl -n argocd patch configmap argocd-cm --type merge -p '
-   data:
-     accounts.ci-bot: apiKey
-   '
-   ```
+- Evita usar o token do admin
+- Permissoes controladas por RBAC
+- Facilita rotacao e revogacao
 
-   **Passo 2: dar permissoes minimas no argocd-rbac-cm**
-   Exemplo: permitir `get` e `sync` apenas na app `default/testapp`:
-   ```bash
-   kubectl -n argocd patch configmap argocd-rbac-cm --type merge -p '
-   data:
-     policy.csv: |
-       p, role:ci-bot, applications, get, default/testapp, allow
-       p, role:ci-bot, applications, sync, default/testapp, allow
-       g, ci-bot, role:ci-bot
-   '
-   ```
+**Passo 1: criar a conta no argocd-cm**
 
-   **Passo 3: gerar o token do robot**
-   ```bash
-   argocd login localhost:8080 --username admin --password <SENHA> --insecure
-   argocd account generate-token --account ci-bot
-   ```
+```bash
+kubectl -n argocd patch configmap argocd-cm --type merge -p '
+data:
+  accounts.ci-bot: apiKey
+'
+```
 
-   Salve o token no GitHub (Secrets → Actions) como `ARGOCD_AUTH_TOKEN`.
+**Passo 2: dar permissoes minimas no argocd-rbac-cm**
+Exemplo: permitir `get` e `sync` apenas na app `default/testapp`:
 
-   **Uso tipico no CI:**
-   ```bash
-   argocd login argocd-server.argocd.svc.cluster.local --auth-token $ARGOCD_AUTH_TOKEN --insecure
-   argocd app sync testapp
-   ```
+```bash
+kubectl -n argocd patch configmap argocd-rbac-cm --type merge -p '
+data:
+  policy.csv: |
+    p, role:ci-bot, applications, get, default/testapp, allow
+    p, role:ci-bot, applications, sync, default/testapp, allow
+    g, ci-bot, role:ci-bot
+'
+```
 
-   **Revogar/rotacionar:**
-   - Gere um novo token e atualize o secret no GitHub.
-   - Para revogar, remova a conta `accounts.ci-bot` e o RBAC correspondente.
+**Passo 3: gerar o token do robot**
+
+```bash
+argocd login localhost:8080 --username admin --password <SENHA> --insecure
+argocd account generate-token --account ci-bot
+```
+
+Salve o token no GitHub (Secrets → Actions) como `ARGOCD_AUTH_TOKEN`.
+
+**Uso tipico no CI:**
+
+```bash
+argocd login argocd-server.argocd.svc.cluster.local --auth-token $ARGOCD_AUTH_TOKEN --insecure
+argocd app sync testapp
+```
+
+**Revogar/rotacionar:**
+
+- Gere um novo token e atualize o secret no GitHub.
+- Para revogar, remova a conta `accounts.ci-bot` e o RBAC correspondente.
 
 11. **Comandos Uteis do ArgoCD**
-   - Listar aplicações:
-     ```bash
-     argocd app list
-     ```
-   - Sincronizar uma aplicação:
-     ```bash
-     argocd app sync <nome_da_aplicacao>
-     ```
-   - Verificar o status de uma aplicação:
-     ```bash
-     argocd app get <nome_da_aplicacao>
-     ```
-   - Excluir uma aplicação:
-     ```bash
-     argocd app delete <nome_da_aplicacao>
-     ```
+
+- Listar aplicações:
+  ```bash
+  argocd app list
+  ```
+- Sincronizar uma aplicação:
+  ```bash
+  argocd app sync <nome_da_aplicacao>
+  ```
+- Verificar o status de uma aplicação:
+  ```bash
+  argocd app get <nome_da_aplicacao>
+  ```
+- Excluir uma aplicação:
+
+  ```bash
+  argocd app delete <nome_da_aplicacao>
+  ```
+
+- PortForward do ArgoCD Server:
+
+```bash
+kubectl port-forward svc/argocd-server -n argocd 8080:443
+```
