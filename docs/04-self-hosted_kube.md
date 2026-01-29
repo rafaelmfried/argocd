@@ -189,6 +189,13 @@ Este workflow **nao precisa de Docker Hub**, mas pode precisar dos seguintes sec
 - **`ARGOCD_AUTH_TOKEN`** (opcional, so se quiser forcar sync)  
   - Crie no ArgoCD (ver `docs/01-argocd.md`) e salve no GitHub em **Settings → Secrets and variables → Actions**.
   - No workflow, use com `argocd login ... --auth-token`.
+- **`MANIFESTS_REPO_TOKEN`** (obrigatorio se voce atualizar o repo `testapp-manifests` via workflow)  
+  - Crie um **Personal Access Token (fine-grained)** no GitHub:
+    1. Foto do usuario → **Settings** → **Developer settings** → **Personal access tokens** → **Fine-grained tokens**
+    2. **Token name** (ex.: `testapp-manifests-ci`)
+    3. **Repository access**: selecione somente `rafaelmfried/testapp-manifests`
+    4. **Permissions**: `Contents` **Read and Write**
+  - Salve o token no repo `testapp` em **Settings → Secrets and variables → Actions** com o nome `MANIFESTS_REPO_TOKEN`.
 
 Se voce quiser adicionar o secret no GitHub:
 1. Repositorio → **Settings**  
@@ -213,6 +220,13 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Checkout manifests repo
+        uses: actions/checkout@v4
+        with:
+          repository: rafaelmfried/testapp-manifests
+          path: testapp-manifests
+          token: ${{ secrets.MANIFESTS_REPO_TOKEN }}
+
       - name: Build image
         run: |
           docker buildx build \
@@ -231,11 +245,11 @@ jobs:
 
       - name: Commit e push dos manifests
         run: |
-          git config user.name "github-actions"
-          git config user.email "github-actions@users.noreply.github.com"
-          git add testapp-manifests/deployment.yaml testapp-manifests/pod.yaml
-          git commit -m "chore: update image to ${{ github.sha }}" || exit 0
-          git push
+          git -C testapp-manifests config user.name "github-actions"
+          git -C testapp-manifests config user.email "github-actions@users.noreply.github.com"
+          git -C testapp-manifests add deployment.yaml pod.yaml
+          git -C testapp-manifests commit -m "chore: update image to ${{ github.sha }}" || exit 0
+          git -C testapp-manifests push
 
       # Opcional: sincronizar via ArgoCD (requer argocd CLI no runner)
       - name: Install ArgoCD CLI
