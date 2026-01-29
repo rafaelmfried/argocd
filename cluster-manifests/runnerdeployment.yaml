@@ -9,6 +9,7 @@ spec:
     spec:
       image: summerwind/actions-runner-dind:latest
       repository: rafaelmfried/testapp
+      ephemeral: false
       labels:
         - self-hosted
         - linux

@@ -112,6 +112,7 @@ spec:
     spec:
       image: summerwind/actions-runner-dind:latest
       repository: <seu-usuario>/<seu-repo>
+      ephemeral: false
       labels:
         - self-hosted
         - linux
@@ -129,6 +130,8 @@ kubectl apply -f path/to/runner-deployment.yaml
 ```
 
 > **Importante:** quando `dockerdWithinRunnerContainer: true`, use uma imagem com Docker embutido (ex.: `summerwind/actions-runner-dind`). Caso contrario, o runner sobe mas o Docker nao inicia (`Cannot connect to the Docker daemon`).
+>
+> Para **nao efemero** (runner permanente), use `ephemeral: false`. Assim ele fica visivel no GitHub mesmo fora de um job.
 >
 > Esse `env` gera o seguinte `daemon.json` dentro do runner:
 >
