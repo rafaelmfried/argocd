@@ -7,9 +7,20 @@ spec:
   replicas: 1
   template:
     spec:
+      image: summerwind/actions-runner-dind:latest
       repository: rafaelmfried/testapp
       labels:
         - self-hosted
         - linux
         - k3d
       dockerdWithinRunnerContainer: true
+      env:
+        - name: DOCKER_INSECURE_REGISTRY
+          value: "local-registry.default.svc.cluster.local:5000"
+      resources:
+        requests:
+          cpu: "1000m"
+          memory: "2Gi"
+        limits:
+          cpu: "2000m"
+          memory: "4Gi"
