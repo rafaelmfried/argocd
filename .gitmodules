@@ -1,3 +1,6 @@
 [submodule "testapp"]
 	path = testapp
 	url = git@github.com:rafaelmfried/testapp.git
+[submodule "testapp-manifests"]
+	path = testapp-manifests
+	url = git@github.com:rafaelmfried/testapp-manifests.git
