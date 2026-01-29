@@ -5,7 +5,7 @@ Manifests Kubernetes para o registry interno usado no cluster.
 ## Como aplicar
 
 ```bash
-kubectl apply -f cluster-manifests/registry.yaml
+kubectl apply -k cluster-manifests
 ```
 
 ## Observacoes
@@ -16,3 +16,14 @@ kubectl apply -f cluster-manifests/registry.yaml
   k3d cluster edit <nome-do-cluster> --port-add 5001:30000@loadbalancer
   ```
   Depois use `localhost:5001` no `docker push`.
+- O `testapp-nodeport` expõe a aplicação via NodePort `30080`. Para acessar no host:
+  ```bash
+  k3d cluster edit <nome-do-cluster> --port-add 8081:30080@loadbalancer
+  ```
+  Depois acesse `http://localhost:8081/healthz`.
+
+## Como remover
+
+```bash
+kubectl delete -k cluster-manifests
+```

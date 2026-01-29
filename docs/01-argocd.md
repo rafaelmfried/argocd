@@ -62,7 +62,21 @@
    argocd app sync testapp
    ```
 
-7. **Expor o ArgoCD sem port-forward (LoadBalancer + kustomize)**
+7. **Acessar a aplicacao no navegador (NodePort)**
+   O acesso externo do `testapp` é feito pelos manifests de cluster:
+
+   ```bash
+   kubectl apply -k cluster-manifests
+   k3d cluster edit <nome-do-cluster> --port-add 8081:30080@loadbalancer
+   ```
+
+   A rota disponível é `GET /healthz`, então teste em:
+
+   ```bash
+   http://localhost:8081/healthz
+   ```
+
+8. **Expor o ArgoCD sem port-forward (LoadBalancer + kustomize)**
    A documentação oficial recomenda expor o `argocd-server` via Service do tipo `LoadBalancer`. Para aplicar/remover facilmente, este repositório cria um Service adicional com esse tipo:
 
    ```bash
@@ -82,7 +96,7 @@
    kubectl delete -k argocd-manifests
    ```
 
-8. **Comandos Uteis do ArgoCD**
+9. **Comandos Uteis do ArgoCD**
    - Listar aplicações:
      ```bash
      argocd app list
