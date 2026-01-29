@@ -22,6 +22,13 @@ kubectl apply -k cluster-manifests
 - **Registry**: Service `local-registry` (NodePort 30000)
 - **App NodePort**: Service `testapp-nodeport` (NodePort 30080)
 
+> O registry local pode atuar como **pull-through cache** do Docker Hub
+> (baixa automaticamente imagens quando nao existem localmente).
+> Para isso, o deployment do registry usa `REGISTRY_PROXY_REMOTEURL=https://registry-1.docker.io`.
+>
+> **Observacao:** para imagens oficiais do Docker Hub, use o prefixo `library/`,
+> ex.: `local-registry.default.svc.cluster.local:5000/library/node:22.20.0-alpine`.
+
 > Para acessar o registry pelo host (opcional):
 >
 > ```bash
