@@ -92,11 +92,70 @@
    Se o seu k3d mapeia a porta 80 do load balancer para o host 8080, acesse `https://localhost:8080`.
    Para remover:
 
+    ```bash
+    kubectl delete -k argocd-manifests
+    ```
+
+9. **Criar o ARGOCD_AUTH_TOKEN (para automacao)**
+   Para gerar um token de API e usar em automacoes (ex.: GitHub Actions):
+
    ```bash
-   kubectl delete -k argocd-manifests
+   argocd login localhost:8080 --username admin --password <SENHA> --insecure
+   argocd account generate-token --account admin
    ```
 
-9. **Comandos Uteis do ArgoCD**
+   Copie o token gerado e salve como secret no GitHub:
+   - Repositorio → **Settings** → **Secrets and variables** → **Actions**
+   - **New repository secret** → `ARGOCD_AUTH_TOKEN`
+
+   > Dica: se voce tiver RBAC, crie uma conta dedicada ao CI com permissao apenas de sync.
+
+10. **Robot do ArgoCD (conta de automacao)**
+   Um *robot* e uma conta dedicada para CI/CD, com permissao **minima** e token proprio.
+   Vantagens:
+   - Evita usar o token do admin
+   - Permissoes controladas por RBAC
+   - Facilita rotacao e revogacao
+
+   **Passo 1: criar a conta no argocd-cm**
+   ```bash
+   kubectl -n argocd patch configmap argocd-cm --type merge -p '
+   data:
+     accounts.ci-bot: apiKey
+   '
+   ```
+
+   **Passo 2: dar permissoes minimas no argocd-rbac-cm**
+   Exemplo: permitir `get` e `sync` apenas na app `default/testapp`:
+   ```bash
+   kubectl -n argocd patch configmap argocd-rbac-cm --type merge -p '
+   data:
+     policy.csv: |
+       p, role:ci-bot, applications, get, default/testapp, allow
+       p, role:ci-bot, applications, sync, default/testapp, allow
+       g, ci-bot, role:ci-bot
+   '
+   ```
+
+   **Passo 3: gerar o token do robot**
+   ```bash
+   argocd login localhost:8080 --username admin --password <SENHA> --insecure
+   argocd account generate-token --account ci-bot
+   ```
+
+   Salve o token no GitHub (Secrets → Actions) como `ARGOCD_AUTH_TOKEN`.
+
+   **Uso tipico no CI:**
+   ```bash
+   argocd login argocd-server.argocd.svc.cluster.local --auth-token $ARGOCD_AUTH_TOKEN --insecure
+   argocd app sync testapp
+   ```
+
+   **Revogar/rotacionar:**
+   - Gere um novo token e atualize o secret no GitHub.
+   - Para revogar, remova a conta `accounts.ci-bot` e o RBAC correspondente.
+
+11. **Comandos Uteis do ArgoCD**
    - Listar aplicações:
      ```bash
      argocd app list

@@ -1,0 +1,15 @@
+apiVersion: actions.summerwind.dev/v1alpha1
+kind: RunnerDeployment
+metadata:
+  name: testapp-runner
+  namespace: actions-runner-system
+spec:
+  replicas: 1
+  template:
+    spec:
+      repository: rafaelmfried/testapp
+      labels:
+        - self-hosted
+        - linux
+        - k3d
+      dockerdWithinRunnerContainer: true
