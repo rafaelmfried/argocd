@@ -15,9 +15,15 @@ spec:
         - linux
         - k3d
       dockerdWithinRunnerContainer: true
-      env:
-        - name: DOCKER_INSECURE_REGISTRY
-          value: "local-registry.default.svc.cluster.local:5000"
+      volumeMounts:
+        - name: docker-daemon
+          mountPath: /etc/docker/daemon.json
+          subPath: daemon.json
+          readOnly: true
+      volumes:
+        - name: docker-daemon
+          configMap:
+            name: runner-docker-daemon
       resources:
         requests:
           cpu: "1000m"

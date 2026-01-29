@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: runner-docker-daemon
+  namespace: actions-runner-system
+data:
+  daemon.json: |
+    {
+      "insecure-registries": [
+        "local-registry.default.svc.cluster.local:5000",
+        "registry-cache.default.svc.cluster.local:5000"
+      ]
+    }

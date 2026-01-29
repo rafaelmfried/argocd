@@ -118,9 +118,15 @@ spec:
         - linux
         - k3d
       dockerdWithinRunnerContainer: true
-      env:
-        - name: DOCKER_INSECURE_REGISTRY
-          value: "local-registry.default.svc.cluster.local:5000"
+      volumeMounts:
+        - name: docker-daemon
+          mountPath: /etc/docker/daemon.json
+          subPath: daemon.json
+          readOnly: true
+      volumes:
+        - name: docker-daemon
+          configMap:
+            name: runner-docker-daemon
 ```
 
 Aplique:
@@ -132,6 +138,24 @@ kubectl apply -f path/to/runner-deployment.yaml
 > **Importante:** quando `dockerdWithinRunnerContainer: true`, use uma imagem com Docker embutido (ex.: `summerwind/actions-runner-dind`). Caso contrario, o runner sobe mas o Docker nao inicia (`Cannot connect to the Docker daemon`).
 >
 > Para **nao efemero** (runner permanente), use `ephemeral: false`. Assim ele fica visivel no GitHub mesmo fora de um job.
+>
+> Quando precisar liberar **mais de um registry inseguro**, use um `ConfigMap` com o `daemon.json`:
+>
+> ```yaml
+> apiVersion: v1
+> kind: ConfigMap
+> metadata:
+>   name: runner-docker-daemon
+>   namespace: actions-runner-system
+> data:
+>   daemon.json: |
+>     {
+>       "insecure-registries": [
+>         "local-registry.default.svc.cluster.local:5000",
+>         "registry-cache.default.svc.cluster.local:5000"
+>       ]
+>     }
+> ```
 >
 > Esse `env` gera o seguinte `daemon.json` dentro do runner:
 >
